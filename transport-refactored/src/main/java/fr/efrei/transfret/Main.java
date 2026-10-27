@@ -9,6 +9,7 @@ public class Main {
         Flotte.initialiser();
         ServiceClient serviceClient = new ServiceClient();
         ServiceExpedition serviceExpedition = new ServiceExpedition();
+        GenerateurFacture generateurFacture = new GenerateurFacture();
 
         System.out.println("\n----- Clients -----");
         Client dupont = serviceClient.creerClient("Jean Dupont", "jean.dupont@mail.fr", "0601020304", "12 rue de la Paix, 75002 Paris", TypeClient.PARTICULIER.name(), null);
@@ -45,7 +46,7 @@ public class Main {
         serviceExpedition.annulerExpedition(exp2.getId());
 
         System.out.println("\n----- Factures -----");
-        System.out.println(exp1.genererFacture());
-        System.out.println(exp2.genererFacture());
+        System.out.println(generateurFacture.generer(exp1));
+        System.out.println(generateurFacture.generer(exp2));
     }
 }
