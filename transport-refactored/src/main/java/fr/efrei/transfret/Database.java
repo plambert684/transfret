@@ -8,22 +8,13 @@ import java.util.Map;
 /**
  * Accès à la base de données (simulée en mémoire pour l'instant).
  */
-public class Database {
+public class Database implements ExpeditionRepository, ClientRepository {
 
-    private static Database instance;
+    private final Map<String, Expedition> expeditions = new HashMap<>();
+    private final Map<String, Client> clients = new HashMap<>();
 
-    public static Map<String, Expedition> expeditions = new HashMap<String, Expedition>();
-    public static Map<String, Client> clients = new HashMap<String, Client>();
-
-    private Database() {
+    public Database() {
         System.out.println("[DB] Connexion à jdbc:mysql://prod-db.transfret.local:3306/transfret");
-    }
-
-    public static Database getInstance() {
-        if (instance == null) {
-            instance = new Database();
-        }
-        return instance;
     }
 
     public void executer(String sql) {
@@ -33,6 +24,11 @@ public class Database {
     public void sauvegarderClient(Client c) {
         executer("INSERT INTO client (nom, email, telephone, type) VALUES ('" + c.getNom() + "', '" + c.getEmail() + "', '" + c.getTelephone() + "', '" + c.getType() + "')");
         clients.put(c.getEmail(), c);
+    }
+
+    @Override
+    public Client trouverClient(String email) {
+        return clients.get(email);
     }
 
     public void sauvegarderExpedition(Expedition e) {

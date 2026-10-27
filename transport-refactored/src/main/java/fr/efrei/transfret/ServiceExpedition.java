@@ -16,14 +16,25 @@ public class ServiceExpedition {
     private static final double TEMPERATURE_REFRIGERATION = 4;
     private static final double FRAIS_ANNULATION_EN_COURS = 0.5;
 
-    public static int compteur = 0;
+    private int compteur;
 
-    private Database db = Database.getInstance();
-    private CalculateurPrix calculateur = new CalculateurPrix();
-    private AffectationVehicule affectation = new AffectationVehicule();
-    private ValidateurExpedition validateur = new ValidateurExpedition();
-    private EstimateurDelai estimateurDelai = new EstimateurDelai();
-    private Notificateur notificateur = new Notificateur();
+    private final ExpeditionRepository db;
+    private final CalculateurPrix calculateur;
+    private final AffectationVehicule affectation;
+    private final ValidateurExpedition validateur;
+    private final EstimateurDelai estimateurDelai;
+    private final Notificateur notificateur;
+
+    public ServiceExpedition(ExpeditionRepository db, CalculateurPrix calculateur,
+                             AffectationVehicule affectation, ValidateurExpedition validateur,
+                             EstimateurDelai estimateurDelai, Notificateur notificateur) {
+        this.db = db;
+        this.calculateur = calculateur;
+        this.affectation = affectation;
+        this.validateur = validateur;
+        this.estimateurDelai = estimateurDelai;
+        this.notificateur = notificateur;
+    }
 
     public Expedition creerExpedition(Client client, List<Colis> colis, String villeDepart, String villeArrivee, String mode, boolean urgent, boolean assurance) {
         ModeTransport modeTransport = ModeTransport.valueOf(mode);
