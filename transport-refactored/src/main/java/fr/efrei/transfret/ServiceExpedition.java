@@ -1,12 +1,5 @@
 package fr.efrei.transfret;
 
-import fr.efrei.transfret.expedition.delai.EstimateurDelai;
-import fr.efrei.transfret.expedition.notification.EmailCanalNotification;
-import fr.efrei.transfret.expedition.notification.Notificateur;
-import fr.efrei.transfret.expedition.notification.SmsCanalNotification;
-import fr.efrei.transfret.expedition.persistance.ExpeditionRepository;
-import fr.efrei.transfret.expedition.validation.ValidateurExpedition;
-
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -16,34 +9,39 @@ public class ServiceExpedition {
 
     public static int compteur = 0;
 
-    private final ExpeditionRepository db;
-    private final CalculateurPrix calculateur;
-    private final AffectationVehicule affectation;
-    private final ValidateurExpedition validateur;
-    private final EstimateurDelai estimateurDelai;
-    private final Notificateur notificateur;
-
-    public ServiceExpedition() {
-        this(Database.getInstance(), new CalculateurPrix(), new AffectationVehicule(),
-                new ValidateurExpedition(), new EstimateurDelai(),
-                new Notificateur(new EmailCanalNotification(), new SmsCanalNotification()));
-    }
-
-    public ServiceExpedition(ExpeditionRepository db, CalculateurPrix calculateur,
-                             AffectationVehicule affectation, ValidateurExpedition validateur,
-                             EstimateurDelai estimateurDelai, Notificateur notificateur) {
-        this.db = db;
-        this.calculateur = calculateur;
-        this.affectation = affectation;
-        this.validateur = validateur;
-        this.estimateurDelai = estimateurDelai;
-        this.notificateur = notificateur;
-    }
+    private Database db = Database.getInstance();
+    private CalculateurPrix calculateur = new CalculateurPrix();
+    private AffectationVehicule affectation = new AffectationVehicule();
 
     public Expedition creerExpedition(Client client, List<Colis> colis, String villeDepart, String villeArrivee, String mode, boolean urgent, boolean assurance) {
-        String erreurValidation = validateur.valider(client, colis, mode, urgent);
-        if (erreurValidation != null) {
-            System.out.println(erreurValidation);
+        if (client == null) {
+            System.out.println("ERREUR : client obligatoire");
+            return null;
+        }
+        if (colis == null || colis.isEmpty()) {
+            System.out.println("ERREUR : au moins un colis est nécessaire");
+            return null;
+        }
+        boolean dangereux = false;
+        boolean refrigere = false;
+        for (Colis c : colis) {
+            if (c.getPoids() <= 0) {
+                System.out.println("ERREUR : poids invalide pour " + c.getDescription());
+                return null;
+            }
+            if (c.getType() == 2) dangereux = true;
+            if (c.getType() == 3) refrigere = true;
+        }
+        if (dangereux && mode.equals("AIR")) {
+            System.out.println("ERREUR : les matières dangereuses sont interdites en transport aérien");
+            return null;
+        }
+        if (refrigere && !(mode.equals("ROUTE") || mode.equals("MER"))) {
+            System.out.println("ERREUR : le transport réfrigéré n'est possible que par route ou par mer");
+            return null;
+        }
+        if (urgent && mode.equals("MER")) {
+            System.out.println("ERREUR : pas d'option urgente pour le transport maritime");
             return null;
         }
         int distance = Utils.getDistance(villeDepart, villeArrivee);
@@ -83,7 +81,7 @@ public class ServiceExpedition {
         e.setDateLivraisonPrevue(cal.getTime());
 
         db.sauvegarderExpedition(e);
-        notificateur.notifier(client, "Confirmation de votre expédition " + e.getId(),
+        notifier(client, "Confirmation de votre expédition " + e.getId(),
                 "Votre expédition " + villeDepart + " -> " + villeArrivee + " (" + mode + ") a été enregistrée. Montant : " + e.getPrixTTC() + " € TTC.",
                 "TransFret : expédition " + e.getId() + " créée, livraison prévue le " + Utils.formaterDate(e.getDateLivraisonPrevue()));
         return e;
@@ -101,7 +99,31 @@ public class ServiceExpedition {
 
     // retourne le délai de livraison en jours
     public int calculerDelai(int distance, String mode, boolean urgent) {
-        return estimateurDelai.estimer(distance, mode, urgent);
+        int jours = 0;
+        switch (mode) {
+            case "ROUTE":
+                double heures = distance / 70.0;
+                if (urgent) {
+                    jours = (int) Math.ceil(heures / 18);
+                } else {
+                    jours = (int) Math.ceil(heures / 9);
+                }
+                break;
+            case "RAIL":
+                jours = (int) Math.ceil(distance / 1440.0) + 1;
+                if (urgent) jours = jours - 1;
+                break;
+            case "MER":
+                jours = (int) Math.ceil(distance / 720.0) + 2;
+                break;
+            case "AIR":
+                jours = 1;
+                if (distance > 3000) jours = 2;
+                if (urgent) jours = 1;
+                break;
+        }
+        if (jours < 1) jours = 1;
+        return jours;
     }
 
     public boolean demarrerExpedition(String id) {
@@ -132,7 +154,7 @@ public class ServiceExpedition {
             }
         }
         db.mettreAJourStatut(e);
-        notificateur.notifier(e.getClient(), "Votre expédition " + e.getId() + " est en route",
+        notifier(e.getClient(), "Votre expédition " + e.getId() + " est en route",
                 "Votre expédition a quitté " + e.getVilleDepart() + ".",
                 "TransFret : expédition " + e.getId() + " partie de " + e.getVilleDepart());
         return true;
@@ -147,7 +169,7 @@ public class ServiceExpedition {
         e.setStatut("LIVREE");
         libererVehicule(e);
         db.mettreAJourStatut(e);
-        notificateur.notifier(e.getClient(), "Votre expédition " + e.getId() + " est livrée",
+        notifier(e.getClient(), "Votre expédition " + e.getId() + " est livrée",
                 "Votre expédition est arrivée à " + e.getVilleArrivee() + ". Merci de votre confiance.",
                 "TransFret : expédition " + e.getId() + " livrée à " + e.getVilleArrivee());
         return true;
@@ -166,7 +188,7 @@ public class ServiceExpedition {
         e.setStatut("ANNULEE");
         libererVehicule(e);
         db.mettreAJourStatut(e);
-        notificateur.notifier(e.getClient(), "Annulation de votre expédition " + e.getId(),
+        notifier(e.getClient(), "Annulation de votre expédition " + e.getId(),
                 "Votre expédition a été annulée. Frais d'annulation : " + e.getFraisAnnulation() + " €",
                 "TransFret : expédition " + e.getId() + " annulée");
         return true;
@@ -179,4 +201,10 @@ public class ServiceExpedition {
         e.getVehicule().setDisponible(true);
     }
 
+    private void notifier(Client client, String sujet, String corps, String sms) {
+        EmailService.envoyer(client.getEmail(), sujet, corps);
+        if (client.getType().equals("PREMIUM")) {
+            new SmsService().envoyerSms(client.getTelephone(), sms);
+        }
+    }
 }

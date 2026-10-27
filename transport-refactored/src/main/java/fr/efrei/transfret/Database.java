@@ -1,8 +1,5 @@
 package fr.efrei.transfret;
 
-import fr.efrei.transfret.expedition.persistance.ExpeditionRepository;
-
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +8,7 @@ import java.util.Map;
 /**
  * Accès à la base de données (simulée en mémoire pour l'instant).
  */
-public class Database implements ExpeditionRepository {
+public class Database {
 
     private static Database instance;
 
