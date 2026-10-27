@@ -11,17 +11,20 @@ public class ServiceClient {
             System.out.println("ERREUR : email invalide (" + email + ")");
             return null;
         }
-        if (!type.equals("PARTICULIER") && !type.equals("ENTREPRISE") && !type.equals("PREMIUM")) {
+        TypeClient typeClient;
+        try {
+            typeClient = TypeClient.valueOf(type);
+        } catch (IllegalArgumentException | NullPointerException e) {
             System.out.println("ERREUR : type de client inconnu");
             return null;
         }
-        if (type.equals("ENTREPRISE") && (siret == null || siret.length() != 14)) {
+        if (typeClient == TypeClient.ENTREPRISE && (siret == null || siret.length() != 14)) {
             System.out.println("ERREUR : SIRET obligatoire (14 chiffres) pour une entreprise");
             return null;
         }
-        Client c = new Client(nom, email, telephone, adresse, type, siret);
+        Client c = new Client(nom, email, telephone, adresse, typeClient, siret);
         Database.getInstance().sauvegarderClient(c);
-        EmailService.envoyer(c.getEmail(), "Bienvenue chez TransFret", "Bonjour " + c.getNom() + ", votre compte " + c.getType().toLowerCase() + " a été créé.");
+        EmailService.envoyer(c.getEmail(), "Bienvenue chez TransFret", "Bonjour " + c.getNom() + ", votre compte " + c.getType().name().toLowerCase() + " a été créé.");
         return c;
     }
 }

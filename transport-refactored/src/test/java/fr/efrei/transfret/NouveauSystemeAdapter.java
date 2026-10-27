@@ -9,8 +9,6 @@ import fr.efrei.transport.contrat.EtatExpedition;
 import fr.efrei.transport.contrat.Notification;
 import fr.efrei.transport.contrat.Statut;
 import fr.efrei.transport.contrat.SystemeTransport;
-import fr.efrei.transport.contrat.TypeMarchandise;
-
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -65,7 +63,7 @@ public class NouveauSystemeAdapter implements SystemeTransport {
             return Optional.empty();
         }
         int delai = (int) ChronoUnit.DAYS.between(jour(e.getDateCreation()), jour(e.getDateLivraisonPrevue()));
-        return Optional.of(new EtatExpedition(e.getId(), Statut.valueOf(e.getStatut()), e.getPrixHT(), e.getPrixTTC(),
+        return Optional.of(new EtatExpedition(e.getId(), Statut.valueOf(e.getStatut().name()), e.getPrixHT(), e.getPrixTTC(),
                 delai, e.getVehicule().getImmatriculation(), e.getFraisAnnulation()));
     }
 
@@ -118,15 +116,6 @@ public class NouveauSystemeAdapter implements SystemeTransport {
 
     private static Colis versColis(ColisDto c) {
         return new Colis(c.description(), c.poidsKg(), c.longueurCm(), c.largeurCm(), c.hauteurCm(),
-                codeType(c.type()), c.valeurDeclaree());
-    }
-
-    private static int codeType(TypeMarchandise type) {
-        return switch (type) {
-            case STANDARD -> Colis.STANDARD;
-            case FRAGILE -> Colis.FRAGILE;
-            case DANGEREUX -> Colis.DANGEREUX;
-            case REFRIGERE -> Colis.REFRIGERE;
-        };
+                fr.efrei.transfret.TypeMarchandise.valueOf(c.type().name()), c.valeurDeclaree());
     }
 }
