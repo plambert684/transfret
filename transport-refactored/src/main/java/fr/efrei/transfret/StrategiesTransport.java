@@ -12,7 +12,8 @@ public final class StrategiesTransport {
                 ModeTransport.ROUTE, new TarifRoute(),
                 ModeTransport.RAIL, new TarifRail(),
                 ModeTransport.MER, new TarifMer(),
-                ModeTransport.AIR, new TarifAir());
+                ModeTransport.AIR, new TarifAir(),
+                ModeTransport.FLUVIAL, new TarifFluvial());
     }
 
     public static Map<TypeClient, PolitiqueRemise> politiquesRemise() {
@@ -27,6 +28,7 @@ public final class StrategiesTransport {
                 ModeTransport.ROUTE, new DelaiRoute(),
                 ModeTransport.RAIL, new DelaiRail(),
                 ModeTransport.MER, new DelaiMer(),
-                ModeTransport.AIR, new DelaiAir());
+                ModeTransport.AIR, new DelaiAir(),
+                ModeTransport.FLUVIAL, new DelaiFluvial());
     }
 }

@@ -25,6 +25,9 @@ public class AssembleurPrix {
         if (contient(expedition.getColis(), TypeMarchandise.REFRIGERE)) {
             calcul = new SupplementRefrigere(calcul);
         }
+        if (SupplementHorsGabarit.concerne(expedition.getColis())) {
+            calcul = new SupplementHorsGabarit(calcul);
+        }
         if (expedition.isUrgent()) {
             calcul = new SupplementUrgence(calcul);
         }

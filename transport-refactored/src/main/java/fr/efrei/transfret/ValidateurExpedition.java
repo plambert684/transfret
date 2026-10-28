@@ -26,8 +26,8 @@ public class ValidateurExpedition {
         if (refrigere && !(mode == ModeTransport.ROUTE || mode == ModeTransport.MER)) {
             return "ERREUR : le transport réfrigéré n'est possible que par route ou par mer";
         }
-        if (urgent && mode == ModeTransport.MER) {
-            return "ERREUR : pas d'option urgente pour le transport maritime";
+        if (urgent && (mode == ModeTransport.MER || mode == ModeTransport.FLUVIAL)) {
+            return "ERREUR : pas d'option urgente pour le transport maritime ou fluvial";
         }
         return null;
     }
