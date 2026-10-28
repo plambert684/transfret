@@ -1,31 +1,28 @@
 package fr.efrei.transfret;
 
-public class Camion extends Vehicule {
+import java.util.List;
 
-    protected boolean adr; // certification matières dangereuses
+public class Camion extends Vehicule implements Motorise {
+
+    private final boolean adr;
 
     public Camion(String immatriculation, double capaciteMax, boolean adr) {
         super(immatriculation, capaciteMax);
         this.adr = adr;
     }
 
-    public void rouler(int km) {
-        System.out.println("Le camion " + immatriculation + " roule sur " + km + " km");
+    protected boolean accepte(List<Colis> colis, ModeTransport mode) {
+        return mode == ModeTransport.ROUTE
+                && !contient(colis, TypeMarchandise.REFRIGERE)
+                && (adr || !contient(colis, TypeMarchandise.DANGEREUX));
     }
 
-    public void naviguer(int milesNautiques) {
-        throw new UnsupportedOperationException("Un camion ne navigue pas");
+    public void partir(int distance) {
+        faireLePlein();
+        System.out.println("Le camion " + immatriculation + " roule sur " + distance + " km");
     }
 
-    public void voler(int altitude) {
-        throw new UnsupportedOperationException("Un camion ne vole pas");
-    }
-
-    public void activerRefrigeration(double temperature) {
-        throw new UnsupportedOperationException("Ce camion n'est pas frigorifique");
-    }
-
-    public boolean peutTransporterMatieresDangereuses() {
-        return adr;
+    public void faireLePlein() {
+        System.out.println("Plein effectué pour " + immatriculation);
     }
 }

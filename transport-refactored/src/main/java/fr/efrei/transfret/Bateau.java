@@ -1,38 +1,35 @@
 package fr.efrei.transfret;
 
-public class Bateau extends Vehicule {
+import java.util.List;
 
-    private boolean conteneursRefrigeres;
+public class Bateau extends Vehicule implements Motorise, Refrigerable {
+
+    private static final double KM_PAR_MILLE_MARIN = 1.852;
+
+    private final boolean conteneursRefrigeres;
 
     public Bateau(String immatriculation, double capaciteMax, boolean conteneursRefrigeres) {
         super(immatriculation, capaciteMax);
         this.conteneursRefrigeres = conteneursRefrigeres;
     }
 
-    public void rouler(int km) {
-        throw new UnsupportedOperationException("Un bateau ne roule pas");
+    protected boolean accepte(List<Colis> colis, ModeTransport mode) {
+        return mode == ModeTransport.MER && (conteneursRefrigeres || !contient(colis, TypeMarchandise.REFRIGERE));
     }
 
-    public void naviguer(int milesNautiques) {
-        System.out.println("Le navire " + immatriculation + " navigue sur " + milesNautiques + " milles nautiques");
+    public void partir(int distance) {
+        faireLePlein();
+        System.out.println("Le navire " + immatriculation + " navigue sur " + (int) (distance / KM_PAR_MILLE_MARIN) + " milles nautiques");
+        if (contient(chargement, TypeMarchandise.REFRIGERE)) {
+            activerRefrigeration(TEMPERATURE_REFRIGERATION);
+        }
     }
 
-    public void voler(int altitude) {
-        throw new UnsupportedOperationException("Un bateau ne vole pas");
+    public void faireLePlein() {
+        System.out.println("Plein effectué pour " + immatriculation);
     }
 
     public void activerRefrigeration(double temperature) {
-        if (!conteneursRefrigeres) {
-            throw new UnsupportedOperationException("Pas de conteneurs frigorifiques sur ce navire");
-        }
         System.out.println("Conteneurs frigorifiques réglés à " + temperature + "°C");
-    }
-
-    public boolean peutTransporterMatieresDangereuses() {
-        return true;
-    }
-
-    public boolean aConteneursRefrigeres() {
-        return conteneursRefrigeres;
     }
 }

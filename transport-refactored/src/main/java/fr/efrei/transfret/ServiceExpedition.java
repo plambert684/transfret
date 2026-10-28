@@ -7,13 +7,10 @@ import java.util.Random;
 
 public class ServiceExpedition {
 
+    //0.2 par défaut car la TVA en France est de 20% en général
     private static final double TAUX_TVA = 0.20;
     private static final int DEBUT_SUFFIXE_ID = 1000;
     private static final int PLAGE_SUFFIXE_ID = 9000;
-    private static final double METRES_PAR_MILLE_MARIN = 1.852;
-    private static final int DISTANCE_DECOLLAGE = 2;
-    private static final int ALTITUDE_VOL = 35000;
-    private static final double TEMPERATURE_REFRIGERATION = 4;
     private static final double FRAIS_ANNULATION_EN_COURS = 0.5;
 
     private int compteur;
@@ -112,24 +109,7 @@ public class ServiceExpedition {
         e.setStatut(StatutExpedition.EN_COURS);
         Vehicule v = e.getVehicule();
         v.setDisponible(false);
-        try {
-            v.faireLePlein();
-        } catch (Exception ex) {
-        }
-        if (e.getMode() == ModeTransport.ROUTE || e.getMode() == ModeTransport.RAIL) {
-            v.rouler(e.getDistance());
-        } else if (e.getMode() == ModeTransport.MER) {
-            v.naviguer((int) (e.getDistance() / METRES_PAR_MILLE_MARIN));
-        } else if (e.getMode() == ModeTransport.AIR) {
-            v.rouler(DISTANCE_DECOLLAGE);
-            v.voler(ALTITUDE_VOL);
-        }
-        for (Colis c : e.getColis()) {
-            if (c.getType() == TypeMarchandise.REFRIGERE) {
-                v.activerRefrigeration(TEMPERATURE_REFRIGERATION);
-                break;
-            }
-        }
+        v.partir(e.getDistance());
         db.mettreAJourStatut(e);
         notificateur.notifier(e.getClient(), "Votre expédition " + e.getId() + " est en route",
                 "Votre expédition a quitté " + e.getVilleDepart() + ".",

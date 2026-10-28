@@ -51,7 +51,22 @@ public abstract class Vehicule implements IVehicule {
         }
     }
 
-    public void faireLePlein() {
-        System.out.println("Plein effectué pour " + immatriculation);
+    public boolean peutPrendreEnCharge(List<Colis> colis, ModeTransport mode) {
+        double poids = 0;
+        for (Colis c : colis) {
+            poids = poids + c.getPoids();
+        }
+        return disponible && capaciteMax - chargeActuelle >= poids && accepte(colis, mode);
+    }
+
+    protected abstract boolean accepte(List<Colis> colis, ModeTransport mode);
+
+    protected static boolean contient(List<Colis> colis, TypeMarchandise type) {
+        for (Colis c : colis) {
+            if (c.getType() == type) {
+                return true;
+            }
+        }
+        return false;
     }
 }
