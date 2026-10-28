@@ -1,5 +1,22 @@
 package fr.efrei.transfret;
 
+import fr.efrei.transfret.config.StrategiesTransport;
+import fr.efrei.transfret.delai.EstimateurDelai;
+import fr.efrei.transfret.modele.Client;
+import fr.efrei.transfret.modele.Colis;
+import fr.efrei.transfret.modele.Expedition;
+import fr.efrei.transfret.notification.EmailService;
+import fr.efrei.transfret.notification.Notificateur;
+import fr.efrei.transfret.notification.SmsService;
+import fr.efrei.transfret.persistance.Database;
+import fr.efrei.transfret.service.GenerateurFacture;
+import fr.efrei.transfret.service.ServiceClient;
+import fr.efrei.transfret.service.ServiceExpedition;
+import fr.efrei.transfret.tarification.CalculateurPrix;
+import fr.efrei.transfret.validation.ValidateurClient;
+import fr.efrei.transfret.validation.ValidateurExpedition;
+import fr.efrei.transfret.vehicule.AffectationVehicule;
+import fr.efrei.transfret.vehicule.Flotte;
 import fr.efrei.transport.contrat.Canal;
 import fr.efrei.transport.contrat.ColisDto;
 import fr.efrei.transport.contrat.DemandeClient;
@@ -122,6 +139,6 @@ public class NouveauSystemeAdapter implements SystemeTransport {
 
     private static Colis versColis(ColisDto c) {
         return new Colis(c.description(), c.poidsKg(), c.longueurCm(), c.largeurCm(), c.hauteurCm(),
-                fr.efrei.transfret.TypeMarchandise.valueOf(c.type().name()), c.valeurDeclaree());
+                fr.efrei.transfret.modele.TypeMarchandise.valueOf(c.type().name()), c.valeurDeclaree());
     }
 }
