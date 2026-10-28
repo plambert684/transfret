@@ -12,8 +12,10 @@ public class Main {
         SmsService sms = new SmsService();
         Notificateur notificateur = new Notificateur(email, sms);
         ServiceClient serviceClient = new ServiceClient(database, email, new ValidateurClient());
-        ServiceExpedition serviceExpedition = new ServiceExpedition(database, new CalculateurPrix(),
-                new AffectationVehicule(flotte), new ValidateurExpedition(), new EstimateurDelai(), notificateur);
+        ServiceExpedition serviceExpedition = new ServiceExpedition(database,
+                new CalculateurPrix(StrategiesTransport.tarifs(), StrategiesTransport.politiquesRemise()),
+                new AffectationVehicule(flotte), new ValidateurExpedition(),
+                new EstimateurDelai(StrategiesTransport.delais()), notificateur);
         GenerateurFacture generateurFacture = new GenerateurFacture();
 
         System.out.println("\n----- Clients -----");
